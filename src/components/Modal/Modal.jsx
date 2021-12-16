@@ -1,46 +1,43 @@
-import { Component } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useLockBodyScroll } from "react-use";
 
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
-const modalRef = document.querySelector('#modal-root');
+const modalRef = document.querySelector("#modal-root");
 
-class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.onEscPress);
-  }
+const Modal = ({ onCloseModal, data }) => {
+  useLockBodyScroll(true);
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.onEscPress);
-  }
+  useEffect(() => {
+    const onEscPress = (e) => {
+      if (e.code === "Escape") {
+        onCloseModal();
+      }
+    };
 
-  onclickBackdrop = e => {
+    window.addEventListener("keydown", onEscPress);
+
+    return () => {
+      window.removeEventListener("keydown", onEscPress);
+    };
+  }, [onCloseModal]);
+
+  const onclickBackdrop = (e) => {
     if (e.target === e.currentTarget) {
-      this.props.onCloseModal();
+      onCloseModal();
     }
   };
 
-  onEscPress = e => {
-    if (e.code === 'Escape') {
-      this.props.onCloseModal();
-    }
-  };
-
-  render() {
-    const {
-      data: { bigImg, tags },
-    } = this.props;
-
-    return createPortal(
-      <div className="Overlay" onClick={this.onclickBackdrop}>
-        <div className="modal">
-          <img src={bigImg} alt={tags} />
-        </div>
-      </div>,
-      modalRef,
-    );
-  }
-}
+  return createPortal(
+    <div className="Overlay" onClick={onclickBackdrop}>
+      <div className="modal">
+        <img src={data.bigImg} alt={data.tags} />
+      </div>
+    </div>,
+    modalRef
+  );
+};
 
 Modal.propTypes = {
   bigImg: PropTypes.string,
